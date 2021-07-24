@@ -28,6 +28,7 @@
               }
             });
         </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Usage</h1></header><article><div><span><p>You can access your sensor data through a <a href="http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html">RxJS Observable</a>. This way you have the maximum of control over your data stream. You can add the values up, filter them, only react if a certain value is reached: You have the choice. Here is a small example showing the relatively small API interface. If you would like to learn more, please see the <a href="/docs/API.html">API specification</a>.</p>
+<h2><a class="anchor" aria-hidden="true" id="device-speed"></a><a href="#device-speed" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Device speed</h2>
 <pre><code class="hljs css language-javascript"><span class="hljs-keyword">import</span> { accelerometer, gyroscope, setUpdateIntervalForType, SensorTypes } <span class="hljs-keyword">from</span> <span class="hljs-string">"react-native-sensors"</span>;
 <span class="hljs-keyword">import</span> { map, filter } <span class="hljs-keyword">from</span> <span class="hljs-string">"rxjs/operators"</span>;
 
@@ -47,6 +48,34 @@ setUpdateIntervalForType(SensorTypes.accelerometer, <span class="hljs-number">40
 
 setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
   <span class="hljs-comment">// If it's the last subscription to accelerometer it will stop polling in the native API</span>
+  subscription.unsubscribe();
+}, <span class="hljs-number">1000</span>);
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="raw-device-acceleration"></a><a href="#raw-device-acceleration" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Raw device acceleration</h2>
+<p>You can get user raw acceleration which is calculated with (accelerometer - gravity) formula, to achieve this you can use RxJs combineLatest</p>
+<pre><code class="hljs css language-javascript"><span class="hljs-keyword">import</span> { accelerometer, gravity, setUpdateIntervalForType, SensorTypes } <span class="hljs-keyword">from</span> <span class="hljs-string">"react-native-sensors"</span>;
+<span class="hljs-keyword">import</span> { combineLatest } <span class="hljs-keyword">from</span> <span class="hljs-string">"rxjs"</span>;
+<span class="hljs-keyword">import</span> { map } <span class="hljs-keyword">from</span> <span class="hljs-string">'rxjs/operators'</span>;
+
+<span class="hljs-keyword">const</span> interval = <span class="hljs-number">100</span>;
+
+setUpdateIntervalForType(SensorTypes.accelerometer, interval);
+setUpdateIntervalForType(SensorTypes.gravity, interval);
+
+<span class="hljs-keyword">const</span> userAccelerationStream = combineLatest(accelerometer, gravity).pipe(
+  map(<span class="hljs-function">(<span class="hljs-params">[accelerometerValue, gravityValue]</span>) =&gt;</span> ({
+    <span class="hljs-attr">accelerometer</span>: accelerometerValue,
+    <span class="hljs-attr">gravity</span>: gravityValue,
+  }))
+)
+
+<span class="hljs-keyword">const</span> subscription = userAccelerationStream.subscribe(<span class="hljs-function"><span class="hljs-params">event</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(
+  <span class="hljs-string">'x:'</span>, event.accelerometer.x - event.gravity.x,
+  <span class="hljs-string">'y:'</span>, event.accelerometer.y - event.gravity.y,
+  <span class="hljs-string">'z:'</span>, event.accelerometer.z - event.gravity.z,
+));
+
+setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
   subscription.unsubscribe();
 }, <span class="hljs-number">1000</span>);
 </code></pre>
